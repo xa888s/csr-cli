@@ -7,20 +7,25 @@ fn main() {
     let text: String;
     match args.len() {
         1 | 2 => {
-            println!("Please specify an option.");
+            eprintln!("Please specify an option.");
             std::process::exit(1)
         }
         3 => text = input::get_input(),
         4 => text = String::from(&args[3]),
         _ => { 
-            println!("Please specify 3 or less options");
+            eprintln!("Please specify 3 or less options");
             std::process::exit(1);
         }
     } 
 
-    // TODO: replace unwrap() with some error handling
     let mode = String::from(&args[1]);
-    let key = args[2].parse::<usize>().unwrap();
+    let key = match args[2].parse::<usize>() {
+        Ok(num) => num,
+        Err(_) => {
+            eprintln!("Please enter a valid integer of usize (0 to 2^64-1)");
+            std::process::exit(1);
+        }
+    };
     
     if mode == "encrypt" {
         let ciphertext = crypt::encrypt(&text, key);
@@ -29,7 +34,7 @@ fn main() {
         let plaintext = crypt::decrypt(&text, key);
         println!("{}", plaintext);
     } else {
-        println!("Mode should be encrypt or decrypt");
+        eprintln!("Mode should be encrypt or decrypt");
         std::process::exit(1);
     }
 }

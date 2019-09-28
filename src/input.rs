@@ -12,5 +12,6 @@ pub fn get_input() -> String {
         message = message + &line;
         line.clear();
     }
+
     message
 }
