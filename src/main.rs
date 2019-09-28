@@ -1,30 +1,35 @@
-mod input;
 mod crypt;
+mod input;
 use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let text: String;
     match args.len() {
-        1 => panic!("WHIP!!!!"),
-        2 => {
-            let mode = args[1].parse::<String>().unwrap();
-            let old_text = input::get_input("Please enter some text:");
-            let key = input::get_input("Please enter a key (0 to 2^64-1):")
-                .trim()
-                .parse::<usize>()
-                .ok()
-                .expect("Not a usize!");
+        1 | 2 => {
+            println!("Please specify an option.");
+            std::process::exit(1)
+        }
+        3 => text = input::get_input(),
+        4 => text = args[3].parse::<String>().unwrap(),
+        _ => { 
+            println!("Please specify 3 or less options");
+            std::process::exit(1);
+        }
+    } 
 
-            if mode == "encrypt" {
-                let text = crypt::encrypt(&old_text, key);
-                println!("Encrypted text: {}", text);
-            } else if mode == "decrypt" {
-                let text = crypt::decrypt(&old_text, key); 
-                println!("Decrypted text: {}", text);
-            } else {
-                panic!("What are you doing lmao");
-            }
-        },
-        _ => panic!("BRUH!!!!"),
+    // TODO: replace unwrap() with some error handling
+    let mode = args[1].parse::<String>().unwrap();
+    let key = args[2].parse::<usize>().unwrap();
+    
+    if mode == "encrypt" {
+        let ciphertext = crypt::encrypt(&text, key);
+        println!("{}", ciphertext);
+    } else if mode == "decrypt" {
+        let plaintext = crypt::decrypt(&text, key);
+        println!("{}", plaintext);
+    } else {
+        println!("Mode should be encrypt or decrypt");
+        std::process::exit(1);
     }
 }
