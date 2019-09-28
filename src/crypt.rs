@@ -5,10 +5,10 @@ static ASCII_ALPHABET: [char; 52] = [
 ];
 
 pub fn encrypt(plaintext: &String, key: usize) -> String {
-    let mut ciphertext = String::new();
+    let mut ciphertext = String::with_capacity(plaintext.capacity());
 
     for letter in plaintext.trim().chars() {
-        if ASCII_ALPHABET.iter().any(|&character| character == letter) {
+        if letter.is_ascii_alphabetic() {
             let pos = ASCII_ALPHABET
                 .iter()
                 .position(|&bet| bet == letter)
@@ -29,10 +29,10 @@ pub fn encrypt(plaintext: &String, key: usize) -> String {
 }
 
 pub fn decrypt(ciphertext: &String, key: usize) -> String {
-    let mut plaintext = String::new();
+    let mut plaintext = String::with_capacity(ciphertext.capacity());
 
     for letter in ciphertext.trim().chars() {
-        if ASCII_ALPHABET.iter().any(|&character| character == letter) {
+        if letter.is_ascii_alphabetic() {
             let pos = ASCII_ALPHABET
                 .iter()
                 .position(|&bet| bet == letter)

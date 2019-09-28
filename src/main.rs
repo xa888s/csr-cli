@@ -4,7 +4,7 @@ use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let text;
+    let text: String;
     match args.len() {
         1 | 2 => {
             println!("Please specify an option.");
