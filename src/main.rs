@@ -1,5 +1,5 @@
-mod crypt;
 mod input;
+mod threads;
 use std::env;
 
 fn main() {
@@ -17,7 +17,7 @@ fn main() {
             std::process::exit(1);
         }
     } 
-
+    let length = text.len();
     let mode = String::from(&args[1]);
     let key = match args[2].parse::<usize>() {
         Ok(num) => num,
@@ -26,15 +26,6 @@ fn main() {
             std::process::exit(1);
         }
     };
-    
-    if mode == "encrypt" {
-        let ciphertext = crypt::encrypt(&text, key);
-        println!("{}", ciphertext);
-    } else if mode == "decrypt" {
-        let plaintext = crypt::decrypt(&text, key);
-        println!("{}", plaintext);
-    } else {
-        eprintln!("Mode should be encrypt or decrypt");
-        std::process::exit(1);
-    }
+    let jobs = threads::split_jobs(6, text);
+    threads::run_jobs(jobs, mode, key, length);
 }

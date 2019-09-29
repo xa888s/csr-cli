@@ -7,7 +7,7 @@ static ASCII_ALPHABET: [char; 52] = [
 pub fn encrypt(plaintext: &String, key: usize) -> String {
     let mut ciphertext = String::with_capacity(plaintext.capacity());
 
-    for letter in plaintext.trim().chars() {
+    for letter in plaintext.chars() {
         if letter.is_ascii_alphabetic() {
             let pos = ASCII_ALPHABET
                 .iter()
@@ -31,7 +31,7 @@ pub fn encrypt(plaintext: &String, key: usize) -> String {
 pub fn decrypt(ciphertext: &String, key: usize) -> String {
     let mut plaintext = String::with_capacity(ciphertext.capacity());
 
-    for letter in ciphertext.trim().chars() {
+    for letter in ciphertext.chars() {
         if letter.is_ascii_alphabetic() {
             let pos = ASCII_ALPHABET
                 .iter()
