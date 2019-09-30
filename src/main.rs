@@ -8,7 +8,7 @@ fn main() {
     match args.len() {
         1 | 2 => {
             eprintln!("Please specify an option.");
-            std::process::exit(1)
+            std::process::exit(1);
         }
         3 => text = input::get_input(),
         4 => text = String::from(&args[3]),
