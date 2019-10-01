@@ -1,6 +1,7 @@
 mod input;
 mod threads;
 use std::env;
+use num_cpus;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -17,7 +18,6 @@ fn main() {
             std::process::exit(1);
         }
     } 
-    let length = text.len();
     let mode = String::from(&args[1]);
     let key = match args[2].parse::<usize>() {
         Ok(num) => num,
@@ -26,6 +26,6 @@ fn main() {
             std::process::exit(1);
         }
     };
-    let jobs = threads::split_jobs(6, text);
-    threads::run_jobs(jobs, mode, key, length);
+    let jobs = threads::split_jobs(num_cpus::get(), text);
+    threads::run_jobs(jobs, mode, key);
 }

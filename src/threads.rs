@@ -1,4 +1,7 @@
 use std::thread;
+use std::io;
+
+#[path = "crypt.rs"]
 mod crypt;
 
 pub fn split_jobs(threads: usize, mut message: String) -> Vec<String> {
@@ -15,14 +18,14 @@ pub fn split_jobs(threads: usize, mut message: String) -> Vec<String> {
     }
     
     // assign remainder of the division as the last member of the vector
-    // this can later be used by calling crypt::encrypt(jobs[jobs.len()], key) on the main thread
+    // this can later be used by calling crypt::encrypt(jobs[jobs.len()-1], key) on the main thread
     if remainder > 0 {
         jobs.push(message);
     }
     jobs
 }
 
-pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize, length: usize) {
+pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize) {
     let mut children = Vec::with_capacity(jobs.len());
     let main_thread_result;
 
@@ -50,13 +53,14 @@ pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize, length: usize) 
             std::process::exit(1);
         }
     }
+    
 
-    let mut result = String::with_capacity(length);
-    result += &main_thread_result;
+    let stdout = io::stdout();
+    stdout.lock();
     for child in children {
         match child.join() {
             Ok(ans) => {
-                result += &ans;
+                print!("{}", &ans);
             }
             Err(_) => {
                 eprintln!("Threads failed");
@@ -64,5 +68,6 @@ pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize, length: usize) 
             }
         }
     }
-    println!("{}", result);
+    print!("{}", &main_thread_result);
+    println!("");
 }

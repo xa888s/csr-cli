@@ -51,3 +51,24 @@ pub fn decrypt(ciphertext: &String, key: usize) -> String {
 
     plaintext
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decrypt_basic() {
+        let input = String::from("Drsc sc k coxdoxmo");
+        let output = String::from("This is a sentence");
+        let key: usize = 10;        
+        assert_eq!(decrypt(&input, key), output);
+    }
+
+    #[test]
+    fn test_encrypt_basic() {
+        let input = String::from("Tests are important");
+        let output = String::from("Nymnm uly cgjilnuhn");
+        let key: usize = 20;
+        assert_eq!(encrypt(&input, key), output);
+    }
+}
