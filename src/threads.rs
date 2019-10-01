@@ -68,6 +68,5 @@ pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize) {
             }
         }
     }
-    print!("{}", &main_thread_result);
-    println!("");
+    println!("{}", &main_thread_result);
 }
