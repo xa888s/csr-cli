@@ -4,56 +4,47 @@ use std::io;
 #[path = "crypt.rs"]
 mod crypt;
 
-pub fn split_jobs(threads: usize, mut message: String) -> Vec<String> {
-    // create a vector with a capacity of the number of threads (each job will run on a thread)
-    let mut jobs = Vec::with_capacity(threads);
+pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
     let size: usize = message.len() / threads;
-    let remainder = message.len() % threads;
+    let jobs;
 
-    // split message into equal sizes and add to a vector
-    for _ in 0..threads {
-        let next = message.split_off(size);
-        jobs.push(message);
-        message = next;
+    // if the length of the message is less than the thread count, do the job on one thread only
+    if message.len() < threads {
+        jobs = 0;
+    } else {
+        jobs = threads;
     }
-    
-    // assign remainder of the division as the last member of the vector
-    // this can later be used by calling crypt::encrypt(jobs[jobs.len()-1], key) on the main thread
-    if remainder > 0 {
-        jobs.push(message);
-    }
-    jobs
-}
 
-pub fn run_jobs(mut jobs: Vec<String>, mode: String, key: usize) {
-    let mut children = Vec::with_capacity(jobs.len());
     let main_thread_result;
+    let mut children = Vec::with_capacity(jobs);
+
+    // index of last char in String
+    let length = message.len() - 1;
 
     match &mode[..] {
         "encrypt" => {
-            main_thread_result = crypt::encrypt(&jobs[jobs.len()-1], key);
-            jobs.pop();
-            for job in jobs {
+            for index in 0..jobs {
                 children.push(thread::spawn(move || {
-                    crypt::encrypt(&job, key)
+                    let chunk = &message[index*size..((index+1)*size)-1]; 
+                    crypt::encrypt(&chunk, &key)
                 }));
             }
+            main_thread_result = crypt::encrypt(&message[size*jobs..length], &key);
         }
         "decrypt" => {
-            main_thread_result = crypt::decrypt(&jobs[jobs.len()-1], key);
-            jobs.pop();
-            for job in jobs {
+            for index in 0..jobs {
                 children.push(thread::spawn(move || {
-                    crypt::decrypt(&job, key)
+                    let chunk = &message[index*size..((index+1)*size)-1]; 
+                    crypt::decrypt(&chunk, &key)
                 }));
             }
+            main_thread_result = crypt::decrypt(&message[size*jobs..length], &key);
         }
         _ => {
             eprintln!("Mode must be 'encrypt' or 'decrypt'");
             std::process::exit(1);
         }
     }
-    
 
     let stdout = io::stdout();
     stdout.lock();

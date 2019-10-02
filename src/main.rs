@@ -26,6 +26,5 @@ fn main() {
             std::process::exit(1);
         }
     };
-    let jobs = threads::split_jobs(num_cpus::get(), text);
-    threads::run_jobs(jobs, mode, key);
+    threads::run_jobs(text, mode, key, num_cpus::get());
 }

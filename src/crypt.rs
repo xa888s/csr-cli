@@ -4,8 +4,8 @@ static ASCII_ALPHABET: [char; 52] = [
     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
 
-pub fn encrypt(plaintext: &String, key: usize) -> String {
-    let mut ciphertext = String::with_capacity(plaintext.capacity());
+pub fn encrypt(plaintext: &str, key: &usize) -> String {
+    let mut ciphertext = String::with_capacity(plaintext.len()); 
 
     for letter in plaintext.chars() {
         if letter.is_ascii_alphabetic() {
@@ -24,12 +24,11 @@ pub fn encrypt(plaintext: &String, key: usize) -> String {
             ciphertext.push(letter);
         }
     }
-
     ciphertext
 }
 
-pub fn decrypt(ciphertext: &String, key: usize) -> String {
-    let mut plaintext = String::with_capacity(ciphertext.capacity());
+pub fn decrypt(ciphertext: &str, key: &usize) -> String {
+    let mut plaintext = String::with_capacity(ciphertext.len()); 
 
     for letter in ciphertext.chars() {
         if letter.is_ascii_alphabetic() {
@@ -37,7 +36,7 @@ pub fn decrypt(ciphertext: &String, key: usize) -> String {
                 .iter()
                 .position(|&bet| bet == letter)
                 .unwrap();
-            let new_pos = ((pos as isize) - (key as isize)).rem_euclid(26);
+            let new_pos = ((pos as isize) - (*key as isize)).rem_euclid(26);
 
             if letter.is_uppercase() {
                 plaintext.push(ASCII_ALPHABET[new_pos as usize + 26]);
@@ -48,7 +47,6 @@ pub fn decrypt(ciphertext: &String, key: usize) -> String {
             plaintext.push(letter);
         }
     }
-
     plaintext
 }
 
