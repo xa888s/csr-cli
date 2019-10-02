@@ -25,7 +25,7 @@ pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
         "encrypt" => {
             for index in 0..jobs {
                 children.push(thread::spawn(move || {
-                    let chunk = &message[index*size..((index+1)*size)-1]; 
+                    let chunk = &message[index*size..(index+1)*size]; 
                     crypt::encrypt(&chunk, &key)
                 }));
             }
@@ -34,7 +34,7 @@ pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
         "decrypt" => {
             for index in 0..jobs {
                 children.push(thread::spawn(move || {
-                    let chunk = &message[index*size..((index+1)*size)-1]; 
+                    let chunk = &message[index*size..(index+1)*size]; 
                     crypt::decrypt(&chunk, &key)
                 }));
             }
