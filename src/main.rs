@@ -1,7 +1,7 @@
 mod input;
 mod threads;
-use std::env;
 use num_cpus;
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -13,11 +13,11 @@ fn main() {
         }
         3 => text = input::get_input(),
         4 => text = String::from(&args[3]),
-        _ => { 
+        _ => {
             eprintln!("Please specify 3 or less options");
             std::process::exit(1);
         }
-    } 
+    }
     let mode = String::from(&args[1]);
     let key = match args[2].parse::<usize>() {
         Ok(num) => num,

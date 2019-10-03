@@ -8,7 +8,9 @@ pub fn get_input() -> String {
     let mut line = String::new();
 
     while let Ok(n_bytes) = stdin.read_to_string(&mut line) {
-        if n_bytes == 0 { break }
+        if n_bytes == 0 {
+            break;
+        }
         message = message + &line;
         line.clear();
     }

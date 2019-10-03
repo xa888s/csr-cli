@@ -1,5 +1,5 @@
-use std::thread;
 use std::io;
+use std::thread;
 
 #[path = "crypt.rs"]
 mod crypt;
@@ -24,21 +24,17 @@ pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
     match &mode[..] {
         "encrypt" => {
             for index in 0..jobs {
-                let chunk = String::from(&message[index*size..(index+1)*size]); 
-                children.push(thread::spawn(move || {
-                    crypt::encrypt(chunk, key)
-                }));
+                let chunk = String::from(&message[index * size..(index + 1) * size]);
+                children.push(thread::spawn(move || crypt::encrypt(chunk, key)));
             }
-            main_thread_result = crypt::encrypt(String::from(&message[size*jobs..length]), key);
+            main_thread_result = crypt::encrypt(String::from(&message[size * jobs..length]), key);
         }
         "decrypt" => {
             for index in 0..jobs {
-                let chunk = String::from(&message[index*size..(index+1)*size]); 
-                children.push(thread::spawn(move || {
-                    crypt::decrypt(chunk, key)
-                }));
+                let chunk = String::from(&message[index * size..(index + 1) * size]);
+                children.push(thread::spawn(move || crypt::decrypt(chunk, key)));
             }
-            main_thread_result = crypt::decrypt(String::from(&message[size*jobs..length]), key);
+            main_thread_result = crypt::decrypt(String::from(&message[size * jobs..length]), key);
         }
         _ => {
             eprintln!("Mode must be 'encrypt' or 'decrypt'");

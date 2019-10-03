@@ -8,8 +8,11 @@ pub fn encrypt(plaintext: String, key: usize) -> String {
     let mut ciphertext = String::with_capacity(plaintext.capacity());
 
     for letter in plaintext.chars() {
-        match ASCII_ALPHABET.iter().position(|&character| character == letter) {
-            Some(pos) => { 
+        match ASCII_ALPHABET
+            .iter()
+            .position(|&character| character == letter)
+        {
+            Some(pos) => {
                 let new_pos = (key + pos) % 26;
                 if letter.is_uppercase() {
                     ciphertext.push(ASCII_ALPHABET[new_pos + 26]);
@@ -28,7 +31,7 @@ pub fn decrypt(ciphertext: String, key: usize) -> String {
 
     for letter in ciphertext.chars() {
         match ASCII_ALPHABET.iter().position(|&bet| bet == letter) {
-            Some(pos) => { 
+            Some(pos) => {
                 let new_pos = ((pos as isize) - (key as isize)).rem_euclid(26);
                 if letter.is_uppercase() {
                     plaintext.push(ASCII_ALPHABET[new_pos as usize + 26]);
@@ -50,7 +53,7 @@ mod tests {
     fn test_decrypt_basic() {
         let input = String::from("Drsc sc k coxdoxmo");
         let output = String::from("This is a sentence");
-        let key: usize = 10;        
+        let key: usize = 10;
         assert_eq!(decrypt(input, key), output);
     }
 
