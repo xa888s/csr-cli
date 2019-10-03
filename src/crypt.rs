@@ -8,7 +8,7 @@ pub fn encrypt(plaintext: String, key: usize) -> String {
     let mut ciphertext = String::with_capacity(plaintext.capacity());
 
     for letter in plaintext.chars() {
-        match ASCII_ALPHABET.iter().position(|&bet| bet == letter) {
+        match ASCII_ALPHABET.iter().position(|&character| character == letter) {
             Some(pos) => { 
                 let new_pos = (key + pos) % 26;
                 if letter.is_uppercase() {
@@ -17,9 +17,7 @@ pub fn encrypt(plaintext: String, key: usize) -> String {
                     ciphertext.push(ASCII_ALPHABET[new_pos]);
                 }
             }
-            None => {
-                ciphertext.push(letter);
-            }
+            None => ciphertext.push(letter),
         }
     }
     ciphertext
@@ -38,9 +36,7 @@ pub fn decrypt(ciphertext: String, key: usize) -> String {
                     plaintext.push(ASCII_ALPHABET[new_pos as usize]);
                 }
             }
-            None => {
-                plaintext.push(letter);
-            }
+            None => plaintext.push(letter),
         }
     }
     plaintext
