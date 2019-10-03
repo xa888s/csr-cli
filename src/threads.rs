@@ -19,26 +19,26 @@ pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
     let mut children = Vec::with_capacity(jobs);
 
     // index of last char in String
-    let length = message.len() - 1;
+    let length = message.len();
 
     match &mode[..] {
         "encrypt" => {
             for index in 0..jobs {
+                let chunk = String::from(&message[index*size..(index+1)*size]); 
                 children.push(thread::spawn(move || {
-                    let chunk = &message[index*size..(index+1)*size]; 
-                    crypt::encrypt(&chunk, &key)
+                    crypt::encrypt(chunk, key)
                 }));
             }
-            main_thread_result = crypt::encrypt(&message[size*jobs..length], &key);
+            main_thread_result = crypt::encrypt(String::from(&message[size*jobs..length]), key);
         }
         "decrypt" => {
             for index in 0..jobs {
+                let chunk = String::from(&message[index*size..(index+1)*size]); 
                 children.push(thread::spawn(move || {
-                    let chunk = &message[index*size..(index+1)*size]; 
-                    crypt::decrypt(&chunk, &key)
+                    crypt::decrypt(chunk, key)
                 }));
             }
-            main_thread_result = crypt::decrypt(&message[size*jobs..length], &key);
+            main_thread_result = crypt::decrypt(String::from(&message[size*jobs..length]), key);
         }
         _ => {
             eprintln!("Mode must be 'encrypt' or 'decrypt'");
