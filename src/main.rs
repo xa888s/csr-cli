@@ -19,10 +19,10 @@ fn main() {
         }
     }
     let mode = String::from(&args[1]);
-    let key = match args[2].parse::<usize>() {
+    let key = match args[2].parse::<u8>() {
         Ok(num) => num,
         Err(_) => {
-            eprintln!("Please enter a valid integer of usize (0 to 2^64-1)");
+            eprintln!("Please enter a valid integer of u8 (0 to 26)");
             std::process::exit(1);
         }
     };

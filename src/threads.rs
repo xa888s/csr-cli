@@ -4,7 +4,7 @@ use std::thread;
 #[path = "crypt.rs"]
 mod crypt;
 
-pub fn run_jobs(message: String, mode: String, key: usize, threads: usize) {
+pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
     let size: usize = message.len() / threads;
     let jobs;
 
