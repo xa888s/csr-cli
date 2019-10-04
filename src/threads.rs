@@ -1,6 +1,6 @@
 use std::io;
-use std::thread;
 use std::io::Write;
+use std::thread;
 
 #[path = "crypt.rs"]
 mod crypt;

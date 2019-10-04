@@ -2,17 +2,16 @@ pub fn encrypt(plaintext: String, key: u8) -> String {
     let mut ciphervec: Vec<u8> = Vec::with_capacity(plaintext.len());
 
     for char in plaintext.bytes() {
+        let mut new_char = char;
+
         if char < 91 && char > 64 {
             let pos = char % 65;
-            let new_char = 65 + ((pos + key) % 26);
-            ciphervec.push(new_char);
+            new_char = 65 + ((pos + key) % 26);
         } else if char < 123 && char > 96 {
             let pos = char % 97;
-            let new_char = 97 + ((pos + key) % 26);
-            ciphervec.push(new_char);
-        } else {
-            ciphervec.push(char);
+            new_char = 97 + ((pos + key) % 26);
         }
+        ciphervec.push(new_char);
     }
     unsafe { String::from_utf8_unchecked(ciphervec) }
 }
