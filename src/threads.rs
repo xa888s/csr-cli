@@ -1,5 +1,6 @@
 use std::io;
 use std::thread;
+use std::io::Write;
 
 #[path = "crypt.rs"]
 mod crypt;
@@ -42,12 +43,12 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
         }
     }
 
-    let stdout = io::stdout();
+    let mut stdout = io::stdout();
     stdout.lock();
     for child in children {
         match child.join() {
             Ok(ans) => {
-                print!("{}", &ans);
+                write!(&mut stdout, "{}", &ans).expect("Failed to write to stdout");
             }
             Err(_) => {
                 eprintln!("Threads failed");
@@ -55,5 +56,5 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
             }
         }
     }
-    println!("{}", &main_thread_result);
+    writeln!(&mut stdout, "{}", &main_thread_result).expect("Failed to write to stdout");
 }
