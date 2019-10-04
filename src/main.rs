@@ -19,12 +19,21 @@ fn main() {
         }
     }
     let mode = String::from(&args[1]);
-    let key = match args[2].parse::<u8>() {
+    let key = get_key(&args[2]);
+    threads::run_jobs(text, mode, key, num_cpus::get());
+}
+
+fn get_key(arg: &String) -> u8 {
+    let key = match arg.parse::<u8>() {
         Ok(num) => num,
         Err(_) => {
-            eprintln!("Please enter a valid integer of u8 (0 to 26)");
+            eprintln!("Please enter a valid integer of 0 to 26");
             std::process::exit(1);
         }
     };
-    threads::run_jobs(text, mode, key, num_cpus::get());
+    if key > 26 {
+        eprintln!("Please enter a valid integer of from 0 to 26");
+        std::process::exit(1);
+    }
+    key
 }
