@@ -16,31 +16,31 @@ fn main() {
     match args.len() {
         1 | 2 => {
             eprintln!("Please specify an option.");
-            return;
+            std::process::exit(1);
         }
         3 => text = input::get_input(),
         4 => text = String::from(&args[3]),
         _ => {
             eprintln!("Please specify 3 or less options");
-            return;
+            std::process::exit(1);
         }
     }
-    
+
     // get run mode
     mode = String::from(&args[1]);
-    
+
     // parsing key
     key = match &args[2].parse::<u8>() {
         Ok(num) => {
             if *num > 26 {
                 eprintln!("Please enter a valid integer from 0 to 26");
-                return;
+                std::process::exit(1);
             }
             *num
         }
         Err(_) => {
             eprintln!("Please enter a valid integer from 0 to 26");
-            return;
+            std::process::exit(1);
         }
     };
 
