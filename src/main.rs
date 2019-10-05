@@ -4,36 +4,46 @@ use num_cpus;
 use std::env;
 
 fn main() {
+    // get command line args
     let args: Vec<String> = env::args().collect();
+
+    // forward declare variables so they stay in main scope.
     let text: String;
+    let mode: String;
+    let key: u8;
+
+    // checking for correct usage
     match args.len() {
         1 | 2 => {
             eprintln!("Please specify an option.");
-            std::process::exit(1);
+            return;
         }
         3 => text = input::get_input(),
         4 => text = String::from(&args[3]),
         _ => {
             eprintln!("Please specify 3 or less options");
-            std::process::exit(1);
+            return;
         }
     }
-    let mode = String::from(&args[1]);
-    let key = get_key(&args[2]);
-    threads::run_jobs(text, mode, key, num_cpus::get());
-}
-
-fn get_key(arg: &String) -> u8 {
-    let key = match arg.parse::<u8>() {
-        Ok(num) => num,
+    
+    // get run mode
+    mode = String::from(&args[1]);
+    
+    // parsing key
+    key = match &args[2].parse::<u8>() {
+        Ok(num) => {
+            if *num > 26 {
+                eprintln!("Please enter a valid integer from 0 to 26");
+                return;
+            }
+            *num
+        }
         Err(_) => {
-            eprintln!("Please enter a valid integer of 0 to 26");
-            std::process::exit(1);
+            eprintln!("Please enter a valid integer from 0 to 26");
+            return;
         }
     };
-    if key > 26 {
-        eprintln!("Please enter a valid integer of from 0 to 26");
-        std::process::exit(1);
-    }
-    key
+
+    // run main code
+    threads::run_jobs(text, mode, key, num_cpus::get());
 }

@@ -5,6 +5,8 @@ pub fn get_input() -> String {
     let stdin = io::stdin();
     let mut handle = stdin.lock();
 
-    handle.read_to_string(&mut buf).expect("Failed to read stdin");
+    handle
+        .read_to_string(&mut buf)
+        .expect("Failed to read stdin");
     buf
 }

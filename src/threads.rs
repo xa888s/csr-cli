@@ -32,7 +32,8 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
         }
         "decrypt" => {
             for index in 0..jobs {
-                let chunk = String::from(&message[index * size..(index + 1) * size]); children.push(thread::spawn(move || crypt::decrypt(chunk, key)));
+                let chunk = String::from(&message[index * size..(index + 1) * size]);
+                children.push(thread::spawn(move || crypt::decrypt(chunk, key)));
             }
             main_thread_result = crypt::decrypt(String::from(&message[size * jobs..length]), key);
         }
@@ -43,7 +44,7 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
     }
 
     let stdout = io::stdout();
-    let mut handle = stdout.lock(); 
+    let mut handle = stdout.lock();
 
     for child in children {
         match child.join() {
