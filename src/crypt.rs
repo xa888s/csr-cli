@@ -55,4 +55,12 @@ mod tests {
         let key: u8 = 20;
         assert_eq!(encrypt(input, key), output);
     }
+
+    #[test]
+    fn test_emoji_passthrough() {
+        let input = String::from("😀 😁 😂 🤣 😃 😄 😅 😆 😉 😊 😋 😎 😍");
+        let key: u8 = 15;
+        assert_eq!(&encrypt(input.clone(), key.clone()), &input);
+        assert_eq!(&decrypt(input.clone(), key), &input);
+    }
 }
