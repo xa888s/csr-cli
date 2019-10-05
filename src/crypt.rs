@@ -2,16 +2,17 @@ pub fn encrypt(plaintext: String, key: u8) -> String {
     let mut ciphervec: Vec<u8> = Vec::with_capacity(plaintext.len());
 
     for char in plaintext.bytes() {
-        let mut new_char = char;
-
-        if char < 91 && char > 64 {
-            let pos = char % 65;
-            new_char = 65 + ((pos + key) % 26);
-        } else if char < 123 && char > 96 {
-            let pos = char % 97;
-            new_char = 97 + ((pos + key) % 26);
-        }
-        ciphervec.push(new_char);
+        ciphervec.push(match char {
+            65..=90 => {
+                let pos = char % 65;
+                65 + ((pos + key) % 26)
+            }
+            97..=122 => {
+                let pos = char % 97;
+                97 + ((pos + key) % 26)
+            }
+            _ => char,
+        });
     }
     unsafe { String::from_utf8_unchecked(ciphervec) }
 }
@@ -20,17 +21,17 @@ pub fn decrypt(ciphertext: String, key: u8) -> String {
     let mut plainvec: Vec<u8> = Vec::with_capacity(ciphertext.len());
 
     for char in ciphertext.bytes() {
-        if char < 91 && char > 64 {
-            let pos = char % 65;
-            let new_char = 65 + ((pos as i8 - key as i8).rem_euclid(26));
-            plainvec.push(new_char as u8);
-        } else if char < 123 && char > 96 {
-            let pos = char % 97;
-            let new_char = 97 + ((pos as i8 - key as i8).rem_euclid(26));
-            plainvec.push(new_char as u8);
-        } else {
-            plainvec.push(char);
-        }
+        plainvec.push(match char {
+            65..=90 => {
+                let pos = char % 65;
+                65 + ((pos as i8 - key as i8).rem_euclid(26)) as u8
+            }
+            97..=122 => {
+                let pos = char % 97;
+                97 + ((pos as i8 - key as i8).rem_euclid(26)) as u8
+            }
+            _ => char,
+        });
     }
     unsafe { String::from_utf8_unchecked(plainvec) }
 }
