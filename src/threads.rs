@@ -32,8 +32,7 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
         }
         "decrypt" => {
             for index in 0..jobs {
-                let chunk = String::from(&message[index * size..(index + 1) * size]);
-                children.push(thread::spawn(move || crypt::decrypt(chunk, key)));
+                let chunk = String::from(&message[index * size..(index + 1) * size]); children.push(thread::spawn(move || crypt::decrypt(chunk, key)));
             }
             main_thread_result = crypt::decrypt(String::from(&message[size * jobs..length]), key);
         }
@@ -43,12 +42,13 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
         }
     }
 
-    let mut stdout = io::stdout();
-    stdout.lock();
+    let stdout = io::stdout();
+    let mut handle = stdout.lock(); 
+
     for child in children {
         match child.join() {
             Ok(ans) => {
-                write!(&mut stdout, "{}", &ans).expect("Failed to write to stdout");
+                write!(&mut handle, "{}", &ans).expect("Failed to write to stdout");
             }
             Err(_) => {
                 eprintln!("Threads failed");
@@ -56,5 +56,5 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
             }
         }
     }
-    writeln!(&mut stdout, "{}", &main_thread_result).expect("Failed to write to stdout");
+    writeln!(&mut handle, "{}", &main_thread_result).expect("Failed to write to stdout");
 }
