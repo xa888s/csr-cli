@@ -5,14 +5,12 @@ pub enum Mode {
 
 pub struct Message {
     pub text: String,
-    pub mode: Mode,
 }
 
 impl Message {
     pub fn new(text: String) -> Message {
         Message {
             text: text,
-            mode: Mode::Encrypt,
         }
     }
 
@@ -66,7 +64,7 @@ mod tests {
         let input = String::from("Drsc sc k coxdoxmo");
         let output = String::from("This is a sentence");
 
-        let message = Message::new(input, Mode::Decrypt);
+        let message = Message::new(input);
         let key: u8 = 10;
 
         assert_eq!(message.decrypt(key), output);
@@ -77,20 +75,31 @@ mod tests {
         let input = String::from("Tests are important");
         let output = String::from("Nymnm uly cgjilnuhn");
 
-        let message = Message::new(input, Mode::Encrypt);
+        let message = Message::new(input);
         let key: u8 = 20;
 
         assert_eq!(message.encrypt(key), output);
     }
 
     #[test]
-    fn test_emoji_passthrough() {
+    fn test_emoji_passthrough_decrypt() {
         let input = String::from("😀 😁 😂 🤣 😃 😄 😅 😆 😉 😊 😋 😎 😍");
 
-        let message = Message::new(input, Mode::Encrypt);
+        let output = input.clone();
+        let message = Message::new(input);
         let key: u8 = 15;
 
-        assert_eq!(&message.encrypt(key.clone()), &input);
-        assert_eq!(&message.decrypt(key), &input);
+        assert_eq!(message.decrypt(key), output);
+    }
+
+    #[test]
+    fn test_emoji_passthrough_encrypt() {
+        let input = String::from("😀 😁 😂 🤣 😃 😄 😅 😆 😉 😊 😋 😎 😍");
+
+        let output = input.clone();
+        let message = Message::new(input);
+        let key: u8 = 15;
+
+        assert_eq!(message.encrypt(key), output);
     }
 }

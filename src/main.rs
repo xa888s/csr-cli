@@ -35,7 +35,7 @@ fn main() {
         }
     };
     
-    let message = Message { text: text, mode: mode };
+    let message = Message { text: text };
 
     // parsing key
     let key = match &args[2].parse::<u8>() {
@@ -53,5 +53,5 @@ fn main() {
     };
 
     // run main code
-    threads::run_jobs(message, key, num_cpus::get());
+    threads::run_jobs(message, mode, key, num_cpus::get());
 }

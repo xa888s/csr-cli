@@ -6,7 +6,7 @@ use std::thread;
 mod message;
 pub use message::{Mode, Message};
 
-pub fn run_jobs(message: Message, key: u8, threads: usize) {
+pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     // index of last char in String
     let length = message.text.len();
 
@@ -18,7 +18,7 @@ pub fn run_jobs(message: Message, key: u8, threads: usize) {
     let main_thread_result;
     let mut children = Vec::with_capacity(jobs);
 
-    match message.mode {
+    match mode {
         Mode::Encrypt => {
             for index in 0..jobs {
                 let chunk = Message::new(String::from(&message.text[index * size..(index + 1) * size]));
