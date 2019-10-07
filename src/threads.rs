@@ -19,7 +19,7 @@ pub fn run_jobs(message: String, mode: String, key: u8, threads: usize) {
 
     let func = match &mode[..] {
         "encrypt" => crypt::encrypt,
-        
+
         "decrypt" => crypt::decrypt,
 
         _ => {
