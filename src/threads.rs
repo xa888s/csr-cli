@@ -4,7 +4,7 @@ use std::thread;
 
 #[path = "message.rs"]
 mod message;
-pub use message::{Mode, Message};
+pub use message::{Message, Mode};
 
 pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     // index of last char in String
@@ -21,7 +21,9 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     match mode {
         Mode::Encrypt => {
             for index in 0..jobs {
-                let chunk = Message::new(String::from(&message.text[index * size..(index + 1) * size]));
+                let chunk = Message::new(String::from(
+                    &message.text[index * size..(index + 1) * size],
+                ));
                 children.push(thread::spawn(move || chunk.encrypt(key)));
             }
             let last = Message::new(String::from(&message.text[size * jobs..length]));
@@ -30,7 +32,9 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
 
         Mode::Decrypt => {
             for index in 0..jobs {
-                let chunk = Message::new(String::from(&message.text[index * size..(index + 1) * size]));
+                let chunk = Message::new(String::from(
+                    &message.text[index * size..(index + 1) * size],
+                ));
                 children.push(thread::spawn(move || chunk.decrypt(key)));
             }
             let last = Message::new(String::from(&message.text[size * jobs..length]));

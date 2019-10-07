@@ -9,9 +9,7 @@ pub struct Message {
 
 impl Message {
     pub fn new(text: String) -> Message {
-        Message {
-            text: text,
-        }
+        Message { text: text }
     }
 
     pub fn encrypt(self, key: u8) -> String {

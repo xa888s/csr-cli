@@ -34,7 +34,7 @@ fn main() {
             std::process::exit(1);
         }
     };
-    
+
     let message = Message { text: text };
 
     // parsing key
