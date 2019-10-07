@@ -18,29 +18,24 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     let main_thread_result;
     let mut children = Vec::with_capacity(jobs);
 
-    match mode {
-        Mode::Encrypt => {
-            for index in 0..jobs {
-                let chunk = Message::new(String::from(
-                    &message.text[index * size..(index + 1) * size],
-                ));
-                children.push(thread::spawn(move || chunk.encrypt(key)));
-            }
-            let last = Message::new(String::from(&message.text[size * jobs..length]));
-            main_thread_result = last.encrypt(key);
-        }
+    // choose which function to use
+    let func: fn(Message, u8) -> String = match mode {
+        Mode::Encrypt => Message::encrypt,
 
-        Mode::Decrypt => {
-            for index in 0..jobs {
-                let chunk = Message::new(String::from(
-                    &message.text[index * size..(index + 1) * size],
-                ));
-                children.push(thread::spawn(move || chunk.decrypt(key)));
-            }
-            let last = Message::new(String::from(&message.text[size * jobs..length]));
-            main_thread_result = last.decrypt(key);
-        }
+        Mode::Decrypt => Message::decrypt,
+    };
+
+    // iterate over all threads and assign messages to each one
+    for index in 0..jobs {
+        let chunk = Message::new(String::from(
+            &message.text[index * size..(index + 1) * size],
+        ));
+        children.push(thread::spawn(move || func(chunk, key)));
     }
+
+    // last job is done on the main thread
+    let last = Message::new(String::from(&message.text[size * jobs..length]));
+    main_thread_result = func(last, key);
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
