@@ -1,10 +1,9 @@
 use std::io;
 use std::io::Write;
 use std::thread;
+extern crate caesar;
 
-#[path = "message.rs"]
-mod message;
-pub use message::{Message, Mode};
+pub use caesar::{Message, Mode};
 
 pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     // index of last char in String

@@ -3,7 +3,13 @@
 [[package]]
 name = "caesar"
 version = "0.1.0"
+source = "git+https://git.cryptid.cc/lost/caesar-rs#4ccaca0a3a48e60e181c94630db6079ced6d48ad"
+
+[[package]]
+name = "caesar"
+version = "0.1.0"
 dependencies = [
+ "caesar 0.1.0 (git+https://git.cryptid.cc/lost/caesar-rs)",
  "num_cpus 1.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -21,5 +27,6 @@ dependencies = [
 ]
 
 [metadata]
+"checksum caesar 0.1.0 (git+https://git.cryptid.cc/lost/caesar-rs)" = "<none>"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
 "checksum num_cpus 1.10.1 (registry+https://github.com/rust-lang/crates.io-index)" = "bcef43580c035376c0705c42792c294b66974abbfd2789b511784023f71f3273"
