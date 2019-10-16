@@ -31,7 +31,6 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
         ));
         children.push(thread::spawn(move || func(chunk, key)));
     }
-    main_thread_result = func(String::from(&message[size * jobs..length]), key);
 
     // last job is done on the main thread
     let last = Message::new(String::from(&message.text[size * jobs..length]));
