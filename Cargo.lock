@@ -6,7 +6,7 @@ version = "0.1.0"
 source = "git+https://git.cryptid.cc/lost/caesar-rs#4ccaca0a3a48e60e181c94630db6079ced6d48ad"
 
 [[package]]
-name = "caesar"
+name = "caesar-cli"
 version = "0.1.0"
 dependencies = [
  "caesar 0.1.0 (git+https://git.cryptid.cc/lost/caesar-rs)",
