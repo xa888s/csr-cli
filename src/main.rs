@@ -35,7 +35,7 @@ fn main() {
         }
     };
 
-    let message = Message { text: text };
+    let message = Message::new(text);
 
     // parsing key
     let key = match &args[2].parse::<u8>() {

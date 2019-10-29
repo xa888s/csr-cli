@@ -14,7 +14,6 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
     // if the length of the message is less than the thread count, do the job on one thread only
     let jobs = if length < threads { 0 } else { threads };
 
-    let main_thread_result;
     let mut children = Vec::with_capacity(jobs);
 
     // choose which function to use
@@ -34,7 +33,7 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
 
     // last job is done on the main thread
     let last = Message::new(String::from(&message.text[size * jobs..length]));
-    main_thread_result = func(last, key);
+    let main_thread_result = func(last, key);
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
