@@ -1,11 +1,10 @@
 use std::io;
 use std::io::Write;
 use std::thread;
-extern crate caesar;
 
-pub use caesar::{Message, Mode};
+pub use caesar::{Kind, Message};
 
-pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
+pub fn run_jobs(message: Message, key: u8, threads: usize) {
     // index of last char in String
     let length = message.text.len();
 
@@ -16,24 +15,23 @@ pub fn run_jobs(message: Message, mode: Mode, key: u8, threads: usize) {
 
     let mut children = Vec::with_capacity(jobs);
 
-    // choose which function to use
-    let func: fn(Message, u8) -> String = match mode {
-        Mode::Encrypt => Message::encrypt,
-
-        Mode::Decrypt => Message::decrypt,
-    };
-
     // iterate over all threads and assign messages to each one
     for index in 0..jobs {
-        let chunk = Message::new(String::from(
-            &message.text[index * size..(index + 1) * size],
-        ));
-        children.push(thread::spawn(move || func(chunk, key)));
+        let chunk = Message::new(
+            String::from(&message.text[index * size..(index + 1) * size]),
+            message.kind,
+        );
+
+        children.push(thread::spawn(move || chunk.translate(key)));
     }
 
     // last job is done on the main thread
-    let last = Message::new(String::from(&message.text[size * jobs..length]));
-    let main_thread_result = func(last, key);
+    let last = Message::new(
+        String::from(&message.text[size * jobs..length]),
+        message.kind,
+    );
+
+    let main_thread_result = last.translate(key);
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
