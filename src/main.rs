@@ -2,7 +2,7 @@ mod input;
 mod threads;
 use num_cpus;
 use std::env;
-use threads::{Kind, Message};
+use threads::{Caesar, Kind};
 
 fn main() {
     // get command line args
@@ -24,8 +24,8 @@ fn main() {
 
     // get run mode
     let message = match args[1].as_str() {
-        "encrypt" => Message::new(text, Kind::Plain),
-        "decrypt" => Message::new(text, Kind::Cipher),
+        "encrypt" => Caesar::new(text, Kind::Plain),
+        "decrypt" => Caesar::new(text, Kind::Cipher),
         _ => {
             eprintln!("Mode must be encrypt or decrypt");
             std::process::exit(1);

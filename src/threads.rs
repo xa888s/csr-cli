@@ -2,9 +2,9 @@ use std::io;
 use std::io::Write;
 use std::thread;
 
-pub use caesar::{Kind, Message};
+pub use caesar::{Caesar, Kind};
 
-pub fn run_jobs(message: Message, key: u8, threads: usize) {
+pub fn run_jobs(message: Caesar, key: u8, threads: usize) {
     // index of last char in String
     let length = message.text.len();
 
@@ -17,7 +17,7 @@ pub fn run_jobs(message: Message, key: u8, threads: usize) {
 
     // iterate over all threads and assign messages to each one
     for index in 0..jobs {
-        let chunk = Message::new(
+        let chunk = Caesar::new(
             String::from(&message.text[index * size..(index + 1) * size]),
             message.kind,
         );
@@ -26,7 +26,7 @@ pub fn run_jobs(message: Message, key: u8, threads: usize) {
     }
 
     // last job is done on the main thread
-    let last = Message::new(
+    let last = Caesar::new(
         String::from(&message.text[size * jobs..length]),
         message.kind,
     );
