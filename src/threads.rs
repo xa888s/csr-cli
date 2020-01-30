@@ -1,6 +1,6 @@
+use rayon::prelude::*;
 use std::io;
 use std::io::Write;
-use std::thread;
 
 pub use caesar::Caesar;
 
@@ -9,21 +9,21 @@ pub fn run_jobs(text: String, translate: fn(&Caesar, String) -> String, key: u8,
 
     // new caesar struct
     let caesar = Caesar::new(key);
-    let mut children = Vec::with_capacity(jobs);
 
     // iterate over all threads and assign messages to each one
-    for index in 0..jobs {
-        let chunk = String::from(&text[index * size..(index + 1) * size]);
-
-        children.push(thread::spawn(move || translate(&caesar, chunk)));
-    }
+    let mut results: Vec<String> = (0..jobs)
+        .into_par_iter()
+        .map(|index| {
+            let chunk = String::from(&text[index * size..(index + 1) * size]);
+            translate(&caesar, chunk)
+        })
+        .collect();
 
     // last job is done on the main thread
     let last = String::from(&text[size * jobs..text.len()]);
+    results.push(translate(&caesar, last));
 
-    let last = translate(&caesar, last);
-
-    print_results(children, last);
+    print_results(results);
 }
 
 fn get_jobs(threads: usize, length: usize) -> (usize, usize) {
@@ -37,21 +37,12 @@ fn get_jobs(threads: usize, length: usize) -> (usize, usize) {
     }
 }
 
-fn print_results(children: Vec<thread::JoinHandle<String>>, last: String) {
+fn print_results(vec: Vec<String>) {
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
-    for child in children {
-        match child.join() {
-            Ok(ans) => {
-                write!(&mut handle, "{}", &ans).expect("Failed to write to stdout");
-            }
-            Err(_) => {
-                eprintln!("Threads failed");
-                std::process::exit(1);
-            }
-        }
+    for line in vec {
+        write!(&mut handle, "{}", &line).expect("Failed to write to stdout");
     }
-
-    writeln!(&mut handle, "{}", &last).expect("Failed to write to stdout");
+    write!(&mut handle, "\n").expect("Failed to write to stdout")
 }
