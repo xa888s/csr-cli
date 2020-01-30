@@ -2,37 +2,42 @@ use std::io;
 use std::io::Write;
 use std::thread;
 
-pub use caesar::{Caesar, Kind};
+pub use caesar::Caesar;
 
-pub fn run_jobs(message: Caesar, key: u8, threads: usize) {
-    // index of last char in String
-    let length = message.text.len();
+pub fn run_jobs(text: String, translate: fn(&Caesar, String) -> String, key: u8, threads: usize) {
+    let (jobs, size) = get_jobs(threads, text.len());
 
-    let size: usize = length / threads;
-
-    // if the length of the message is less than the thread count, do the job on one thread only
-    let jobs = if length < threads { 0 } else { threads };
-
+    // new caesar struct
+    let caesar = Caesar::new(key);
     let mut children = Vec::with_capacity(jobs);
 
     // iterate over all threads and assign messages to each one
     for index in 0..jobs {
-        let chunk = Caesar::new(
-            String::from(&message.text[index * size..(index + 1) * size]),
-            message.kind,
-        );
+        let chunk = String::from(&text[index * size..(index + 1) * size]);
 
-        children.push(thread::spawn(move || chunk.translate(key)));
+        children.push(thread::spawn(move || translate(&caesar, chunk)));
     }
 
     // last job is done on the main thread
-    let last = Caesar::new(
-        String::from(&message.text[size * jobs..length]),
-        message.kind,
-    );
+    let last = String::from(&text[size * jobs..text.len()]);
 
-    let main_thread_result = last.translate(key);
+    let last = translate(&caesar, last);
 
+    print_results(children, last);
+}
+
+fn get_jobs(threads: usize, length: usize) -> (usize, usize) {
+    let size: usize = length / threads;
+
+    // if the length of the message is less than the thread count, do the job on one thread only
+    if length < threads {
+        (0, size)
+    } else {
+        (threads, size)
+    }
+}
+
+fn print_results(children: Vec<thread::JoinHandle<String>>, last: String) {
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
@@ -47,5 +52,6 @@ pub fn run_jobs(message: Caesar, key: u8, threads: usize) {
             }
         }
     }
-    writeln!(&mut handle, "{}", &main_thread_result).expect("Failed to write to stdout");
+
+    writeln!(&mut handle, "{}", &last).expect("Failed to write to stdout");
 }
