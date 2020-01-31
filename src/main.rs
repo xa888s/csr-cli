@@ -1,52 +1,62 @@
+mod error;
 mod input;
-mod threads;
+mod jobs;
+use clap::{App, Arg};
+use error::*;
+use jobs::Caesar;
 use num_cpus;
-use std::env;
-use threads::Caesar;
+use std::error::Error;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     // get command line args
-    let args: Vec<String> = env::args().collect();
+    let matches = App::new("caesar-cli")
+        .version("0.4.1")
+        .about("A simple caesar cipher and decryption tool")
+        .author("desolate")
+        .arg(
+            Arg::with_name("decrypt")
+                .help("Decryption mode (default: encryption)")
+                .short("d")
+                .long("decrypt"),
+        )
+        .arg(
+            Arg::with_name("key")
+                .help("Number to shift by")
+                .required(true)
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("input")
+                .help("Input to encrypt/decrypt")
+                .index(2),
+        )
+        .get_matches();
 
-    // checking for correct usage
-    let text = match args.len() {
-        1 | 2 => {
-            eprintln!("Please specify an option.");
-            std::process::exit(1);
-        }
-        3 => input::get_input(),
-        4 => String::from(&args[3]),
-        _ => {
-            eprintln!("Please specify 3 or less options");
-            std::process::exit(1);
-        }
+    let text = if !matches.is_present("input") {
+        input::get()?
+    } else {
+        String::from(matches.value_of("input").unwrap())
     };
 
     // get run mode
-    let operation = match args[1].as_str() {
-        "encrypt" => Caesar::encrypt,
-        "decrypt" => Caesar::decrypt,
-        _ => {
-            eprintln!("Mode must be encrypt or decrypt");
-            std::process::exit(1);
-        }
+    let operation = if matches.is_present("decrypt") {
+        Caesar::decrypt
+    } else {
+        Caesar::encrypt
     };
 
     // parsing key
-    let key = match &args[2].parse::<u8>() {
-        Ok(num) => {
-            if *num > 26 {
-                eprintln!("Please enter a valid integer from 0 to 26");
-                std::process::exit(1);
-            }
-            *num
-        }
-        Err(_) => {
-            eprintln!("Please enter a valid integer from 0 to 26");
-            std::process::exit(1);
-        }
-    };
+    let mut key = matches.value_of("key").unwrap().parse::<u8>()?;
+    key = check_key(key)?;
 
     // run main code
-    threads::run_jobs(text, operation, key, num_cpus::get());
+    jobs::run(text, operation, key, num_cpus::get());
+    Ok(())
+}
+
+fn check_key(key: u8) -> Result<u8, ShiftSizeError> {
+    match key {
+        0..=26 => Ok(key),
+        _ => Err(ShiftSizeError::TooBig),
+    }
 }

@@ -4,8 +4,8 @@ use std::io::Write;
 
 pub use caesar::Caesar;
 
-pub fn run_jobs(text: String, translate: fn(&Caesar, String) -> String, key: u8, threads: usize) {
-    let (jobs, size) = get_jobs(threads, text.len());
+pub fn run(text: String, translate: fn(&Caesar, String) -> String, key: u8, threads: usize) {
+    let (jobs, size) = get(threads, text.len());
 
     // new caesar struct
     let caesar = Caesar::new(key);
@@ -23,10 +23,13 @@ pub fn run_jobs(text: String, translate: fn(&Caesar, String) -> String, key: u8,
     let last = String::from(&text[size * jobs..text.len()]);
     results.push(translate(&caesar, last));
 
-    print_results(results);
+    match print_results(results) {
+        Ok(_) => (),
+        Err(err) => panic!("Failed to write to stdout: {}", err),
+    }
 }
 
-fn get_jobs(threads: usize, length: usize) -> (usize, usize) {
+fn get(threads: usize, length: usize) -> (usize, usize) {
     let size: usize = length / threads;
 
     // if the length of the message is less than the thread count, do the job on one thread only
@@ -37,12 +40,13 @@ fn get_jobs(threads: usize, length: usize) -> (usize, usize) {
     }
 }
 
-fn print_results(vec: Vec<String>) {
+fn print_results(vec: Vec<String>) -> std::io::Result<()> {
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
     for line in vec {
-        write!(&mut handle, "{}", &line).expect("Failed to write to stdout");
+        write!(&mut handle, "{}", &line)?;
     }
-    write!(&mut handle, "\n").expect("Failed to write to stdout")
+    write!(&mut handle, "\n")?;
+    Ok(())
 }
