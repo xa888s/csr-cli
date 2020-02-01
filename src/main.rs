@@ -3,8 +3,6 @@ mod input;
 mod jobs;
 use clap::{App, Arg};
 use error::*;
-use jobs::Caesar;
-use num_cpus;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -32,25 +30,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .get_matches();
 
+    // parsing key
+    let mut key = matches.value_of("key").unwrap().parse::<u8>()?;
+    key = check_key(key)?;
+
     let text = if !matches.is_present("input") {
         input::get()?
     } else {
         String::from(matches.value_of("input").unwrap())
     };
 
-    // get run mode
-    let operation = if matches.is_present("decrypt") {
-        Caesar::decrypt
-    } else {
-        Caesar::encrypt
-    };
-
-    // parsing key
-    let mut key = matches.value_of("key").unwrap().parse::<u8>()?;
-    key = check_key(key)?;
+    let mode = matches.is_present("decrypt");
 
     // run main code
-    jobs::run(text, operation, key, num_cpus::get());
+    jobs::run(text, key, mode);
     Ok(())
 }
 
