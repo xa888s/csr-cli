@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use std::io;
 use std::io::Write;
 
-pub use caesar::Caesar;
+pub use csr::Caesar;
 
 pub fn run(text: String, key: u8, decrypt: bool) {
     let (jobs, size) = chunks(text.len());
@@ -54,6 +54,6 @@ fn print_results(vec: Vec<String>) -> std::io::Result<()> {
     for line in vec {
         write!(&mut handle, "{}", &line)?;
     }
-    write!(&mut handle, "\n")?;
+    writeln!(&mut handle, "")?;
     Ok(())
 }
