@@ -7,7 +7,7 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // get command line args
-    let matches = App::new("caesar-cli")
+    let matches = App::new("csr")
         .version("0.4.1")
         .about("A simple caesar cipher and decryption tool")
         .author("desolate")

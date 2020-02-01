@@ -6,7 +6,7 @@ This is a simple cli utility that allows you to decrypt/encrypt with the caesar 
 # Usage
 A typical command would be in this form:
 ```
-caesar-cli [MODE] [KEY] [TEXT]
+csr [MODE] [KEY] [TEXT]
 ```
 - Default mode is to encrypt, to decrypt use the "-d" arg.
 - Key is a number from `0` to `26`.

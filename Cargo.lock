@@ -36,7 +36,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "caesar"
 version = "0.6.0"
-source = "git+https://git.cryptid.cc/lost/caesar-rs#38324198083e15a3324007b058c9878591319001"
+source = "git+https://git.cryptid.cc/lost/caesar-rs#b41dd089bc1084c59b3cb3ae69479aa4f3d35479"
 dependencies = [
  "num 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
