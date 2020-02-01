@@ -1,4 +1,4 @@
-# caesar-cli
+# csr-cli
 This is a simple cli utility that allows you to decrypt/encrypt with the caesar cipher.
 
 # WARNING: OBVIOUSLY NOT CRYPTOGRAPHICALLY SECURE

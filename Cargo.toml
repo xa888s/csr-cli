@@ -1,5 +1,5 @@
 [package]
-name = "caesar-cli"
+name = "csr-cli"
 version = "0.5.0"
 authors = ["lost <derribado@tutanota.com>"]
 edition = "2018"
