@@ -54,6 +54,6 @@ fn print_results(vec: Vec<String>) -> std::io::Result<()> {
     for line in vec {
         write!(&mut handle, "{}", &line)?;
     }
-    writeln!(&mut handle, "")?;
+    writeln!(&mut handle)?;
     Ok(())
 }
