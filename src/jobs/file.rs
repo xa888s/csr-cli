@@ -3,7 +3,7 @@ use csr::Caesar;
 use std::error::Error;
 
 use std::fs::File;
-pub use std::io::{self, prelude::*, BufReader};
+use std::io::BufReader;
 
 pub fn run(decrypt: bool, caesar: Caesar, path: &str) -> Result<(), Box<dyn Error>> {
     let f = File::open(path)?;
