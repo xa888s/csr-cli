@@ -3,8 +3,9 @@ mod file;
 mod stdin;
 
 pub use csr::Caesar;
+use std::error::Error;
 
-pub fn run(source: Source, decrypt: bool, key: u8) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(source: Source, decrypt: bool, key: u8) -> Result<(), Box<dyn Error>> {
     let caesar = Caesar::new(key);
 
     match source {
