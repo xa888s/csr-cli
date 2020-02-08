@@ -11,13 +11,14 @@ pub fn run(source: Source, decrypt: bool, key: u8) -> Result<(), Box<dyn std::er
         Caesar::encrypt
     };
 
+    let caesar = Caesar::new(key);
+
     match source {
         Source::Text(s) => {
-            let caesar = Caesar::new(key);
             println!("{}", translate(caesar, s));
         }
-        Source::File(p) => file::run(decrypt, key, p)?,
-        Source::Stdin => unimplemented!(),
+        Source::File(p) => file::run(decrypt, caesar, p)?,
+        Source::Stdin => stdin::run(decrypt, caesar)?,
     };
 
     Ok(())

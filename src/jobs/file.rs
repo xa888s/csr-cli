@@ -6,14 +6,13 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader, Write};
 
-pub fn run(decrypt: bool, key: u8, path: &str) -> Result<(), Box<dyn Error>> {
+pub fn run(decrypt: bool, caesar: Caesar, path: &str) -> Result<(), Box<dyn Error>> {
     let translate: fn(Caesar, &mut [u8]) = if decrypt {
         Caesar::decrypt_bytes
     } else {
         Caesar::encrypt_bytes
     };
 
-    let caesar = Caesar::new(key);
     let cpus = cpus::get();
 
     let f = File::open(path)?;
