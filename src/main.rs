@@ -8,7 +8,7 @@ use std::error::Error;
 fn main() -> Result<(), Box<dyn Error>> {
     // get command line args
     let matches = App::new("csr")
-        .version("0.5.0")
+        .version("0.7.0")
         .about("A simple caesar cipher and decryption tool")
         .author("desolate")
         .arg(
