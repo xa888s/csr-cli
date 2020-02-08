@@ -1,14 +1,14 @@
 mod error;
-mod input;
 mod jobs;
 use clap::{App, Arg};
 use error::*;
+use jobs::Source;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // get command line args
     let matches = App::new("csr")
-        .version("0.4.1")
+        .version("0.5.0")
         .about("A simple caesar cipher and decryption tool")
         .author("desolate")
         .arg(
@@ -28,22 +28,35 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Input to encrypt/decrypt")
                 .index(2),
         )
+        .arg(
+            Arg::with_name("file")
+                .help("File to encrypt/decrypt")
+                .takes_value(true)
+                .short("f")
+                .long("file"),
+        )
         .get_matches();
 
     // parsing key
-    let mut key = matches.value_of("key").unwrap().parse::<u8>()?;
-    key = check_key(key)?;
-
-    let text = if !matches.is_present("input") {
-        input::get()?
-    } else {
-        String::from(matches.value_of("input").unwrap())
+    let mut key = match matches.value_of("key") {
+        Some(k) => k.parse::<u8>()?,
+        None => unreachable!(),
     };
 
-    let mode = matches.is_present("decrypt");
+    key = check_key(key)?;
+
+    let source = match matches.value_of("input") {
+        Some(s) => Source::Text(s),
+        None => match matches.value_of("file") {
+            Some(f) => Source::File(f),
+            None => Source::Stdin,
+        },
+    };
+
+    let switch = matches.is_present("decrypt");
 
     // run main code
-    jobs::run(text, key, mode);
+    jobs::run(source, switch, key)?;
     Ok(())
 }
 

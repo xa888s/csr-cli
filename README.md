@@ -1,7 +1,7 @@
 # csr-cli
 This is a simple cli utility that allows you to decrypt/encrypt with the caesar cipher.
 
-# WARNING: OBVIOUSLY NOT CRYPTOGRAPHICALLY SECURE
+### WARNING: OBVIOUSLY NOT CRYPTOGRAPHICALLY SECURE
 
 # Usage
 A typical command would be in this form:
