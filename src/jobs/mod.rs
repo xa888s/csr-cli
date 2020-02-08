@@ -1,4 +1,4 @@
-mod buffer;
+mod buffers;
 mod file;
 mod stdin;
 

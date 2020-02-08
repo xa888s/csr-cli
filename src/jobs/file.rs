@@ -1,4 +1,4 @@
-use super::buffer;
+use super::buffers;
 use csr::Caesar;
 use num_cpus as cpus;
 use rayon::prelude::*;
@@ -14,16 +14,17 @@ pub fn run(decrypt: bool, key: u8, path: &str) -> Result<(), Box<dyn Error>> {
     };
 
     let caesar = Caesar::new(key);
+    let cpus = cpus::get();
 
     let f = File::open(path)?;
     let mut reader = BufReader::new(f);
-    let mut bufs: Vec<[u8; 8192]> = buffer::get();
+    let mut bufs = buffers::get(cpus);
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
     'outer: loop {
-        let mut filled = cpus::get();
+        let mut filled = cpus;
         let mut bytes = 0;
         for (i, buf) in (&mut bufs).iter_mut().enumerate() {
             let size = reader.read(buf)?;
