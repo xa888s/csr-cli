@@ -1,7 +1,5 @@
-mod error;
 mod jobs;
 use clap::{App, Arg};
-use error::*;
 use jobs::Source;
 use std::error::Error;
 
@@ -38,12 +36,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .get_matches();
 
     // parsing key
-    let mut key = match matches.value_of("key") {
+    let key = match matches.value_of("key") {
         Some(k) => k.parse::<u8>()?,
         None => unreachable!(),
     };
-
-    key = check_key(key)?;
 
     let source = match matches.value_of("input") {
         Some(s) => Source::Text(s),
@@ -58,11 +54,4 @@ fn main() -> Result<(), Box<dyn Error>> {
     // run main code
     jobs::run(source, switch, key)?;
     Ok(())
-}
-
-fn check_key(key: u8) -> Result<u8, ShiftSizeError> {
-    match key {
-        0..=26 => Ok(key),
-        _ => Err(ShiftSizeError::TooBig),
-    }
 }

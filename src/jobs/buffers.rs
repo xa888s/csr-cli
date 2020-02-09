@@ -70,8 +70,8 @@ pub fn run<R: Read>(
         bufs.par_iter_mut().for_each(|buf| translate(caesar, buf));
 
         // print all filled buffers except the last one
-        for buf in 0..filled - 1 {
-            let message = str::from_utf8(&bufs[buf])?;
+        for buf in bufs.iter().take(filled - 1) {
+            let message = str::from_utf8(buf)?;
             write!(&mut handle, "{}", message)?;
         }
 
