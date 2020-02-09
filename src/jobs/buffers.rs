@@ -42,27 +42,25 @@ pub fn run<R: Read>(
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
-    // runs until there is no data left
-    'outer: loop {
-        let mut filled = cpus;
-        let mut bytes = 0;
+    let mut filled = cpus;
+    let mut bytes = 0;
 
+    // runs until there is no data left
+    loop {
+        if filled < cpus {
+            break;
+        }
         // assign messages to each buffer and break the
         // loop if no more data is coming in
         for (i, buf) in (&mut bufs).iter_mut().enumerate() {
-            let size = reader.read(buf)?;
+            let taken = reader.read(buf)?;
 
-            if size == 0 {
-                match i {
-                    0 => break 'outer,
-                    // the amount of cpus filled with data
-                    _ => {
-                        filled = i;
-                        break;
-                    }
+            match taken {
+                0 => {
+                    filled = i;
+                    break;
                 }
-            } else {
-                bytes = size;
+                _ => bytes = taken,
             }
         }
 
