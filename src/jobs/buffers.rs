@@ -42,25 +42,22 @@ pub fn run<R: Read>(
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
-    let mut filled = cpus;
-    let mut bytes = 0;
+    let mut filled = cpus - 1;
+    let mut bytes = BUFFER_SIZE;
 
     // runs until there is no data left
     loop {
-        if filled < cpus {
+        if filled < (cpus - 1) {
             break;
         }
         // assign messages to each buffer and break the
         // loop if no more data is coming in
         for (i, buf) in (&mut bufs).iter_mut().enumerate() {
-            let taken = reader.read(buf)?;
+            bytes = reader.read(buf)?;
 
-            match taken {
-                0 => {
-                    filled = i;
-                    break;
-                }
-                _ => bytes = taken,
+            if bytes != BUFFER_SIZE {
+                filled = i;
+                break;
             }
         }
 
@@ -68,14 +65,14 @@ pub fn run<R: Read>(
         bufs.par_iter_mut().for_each(|buf| translate(caesar, buf));
 
         // print all filled buffers except the last one
-        for buf in bufs.iter().take(filled - 1) {
+        for buf in bufs.iter().take(filled) {
             let message = str::from_utf8(buf)?;
             write!(&mut handle, "{}", message)?;
         }
 
         // print the last filled buffer until the amount of
         // bytes read (to make sure no junk is printed)
-        let last = str::from_utf8(&bufs[filled - 1][0..bytes])?;
+        let last = str::from_utf8(&bufs[filled][0..bytes])?;
         write!(&mut handle, "{}", last)?;
     }
 
