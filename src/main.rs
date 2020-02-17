@@ -1,6 +1,6 @@
 mod jobs;
 use clap::{App, Arg};
-use jobs::Source;
+use jobs::{Mode, Source};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -49,7 +49,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         },
     };
 
-    let switch = matches.is_present("decrypt");
+    let switch = if matches.is_present("decrypt") {
+        Mode::Decrypt
+    } else {
+        Mode::Encrypt
+    };
 
     // run main code
     jobs::run(source, switch, key)?;

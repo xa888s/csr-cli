@@ -1,3 +1,4 @@
+use super::Mode;
 use csr::Caesar;
 use num_cpus as cpus;
 use rayon::prelude::*;
@@ -26,15 +27,13 @@ fn get(cpus: usize) -> Vec<[u8; BUFFER_SIZE]> {
 // runs the caesar cipher in parallel on any BufReader
 // that contains a type that implements Read
 pub fn run<R: Read>(
-    decrypt: bool,
+    switch: Mode,
     caesar: Caesar,
     reader: &mut BufReader<R>,
 ) -> Result<(), Box<dyn Error>> {
-    // chooses which mode it will be run in (encrypt/decrypt)
-    let translate: fn(Caesar, &mut [u8]) = if decrypt {
-        Caesar::decrypt_bytes
-    } else {
-        Caesar::encrypt_bytes
+    let translate = match switch {
+        Mode::Encrypt => Caesar::encrypt_bytes,
+        Mode::Decrypt => Caesar::decrypt_bytes,
     };
 
     let cpus = cpus::get();
