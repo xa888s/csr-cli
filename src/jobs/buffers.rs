@@ -3,8 +3,7 @@ use csr::Caesar;
 use num_cpus as cpus;
 use rayon::prelude::*;
 use std::error::Error;
-use std::io::{self, prelude::*, BufReader, Write};
-use std::str;
+use std::io::{self, prelude::*, BufReader, BufWriter};
 
 const BUFFER_SIZE: usize = 32768;
 
@@ -39,7 +38,8 @@ pub fn run<R: Read>(
     let cpus = cpus::get();
     let mut bufs = get(cpus);
     let stdout = io::stdout();
-    let mut handle = stdout.lock();
+    let handle = stdout.lock();
+    let mut writer = BufWriter::new(handle);
 
     let mut filled = cpus - 1;
     let mut bytes = BUFFER_SIZE;
@@ -65,14 +65,13 @@ pub fn run<R: Read>(
 
         // print all filled buffers except the last one
         for buf in bufs.iter().take(filled) {
-            let message = str::from_utf8(buf)?;
-            write!(&mut handle, "{}", message)?;
+            writer.write(buf)?;
         }
 
         // print the last filled buffer until the amount of
         // bytes read (to make sure no junk is printed)
-        let last = str::from_utf8(&bufs[filled][0..bytes])?;
-        write!(&mut handle, "{}", last)?;
+        let last = &bufs[filled][0..bytes];
+        writer.write(last)?;
     }
 
     Ok(())
