@@ -61,7 +61,7 @@ pub fn run<R: Read>(
 
         // work on each buffer in parallel
         bufs.par_iter_mut()
-            .take(filled)
+            .take(filled + 1)
             .for_each(|buf| translate(caesar, buf));
 
         // print all filled buffers except the last one
