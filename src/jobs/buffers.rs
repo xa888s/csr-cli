@@ -1,79 +1,134 @@
-use super::Mode;
+use crossbeam::{
+    channel::{bounded, Sender},
+    thread::{self, ScopedJoinHandle},
+};
 use csr::Caesar;
 use num_cpus as cpus;
-use rayon::prelude::*;
-use std::error::Error;
 use std::io::{self, prelude::*, BufReader};
+use std::sync::Mutex;
 
 const BUFFER_SIZE: usize = 32768;
 
-// gets the initial buffers
-fn get(cpus: usize) -> Vec<[u8; BUFFER_SIZE]> {
-    // Vec to store buffers since thread count is
-    // acquired at runtime
-    let mut bufs: Vec<[u8; BUFFER_SIZE]> = Vec::with_capacity(cpus);
-
-    // creates a buffer for every logical thread
-    // so if you have 4 threads, you will get 4 buffers
-    for _ in 0..cpus {
-        let buf: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
-        bufs.push(buf);
-    }
-
-    bufs
-}
-
-// runs the caesar cipher in parallel on any BufReader
-// that contains a type that implements Read
 pub fn run<R: Read>(
-    switch: Mode,
+    translate: impl Fn(Caesar, &mut [u8]) + Send + Copy,
     caesar: Caesar,
     reader: &mut BufReader<R>,
-) -> Result<(), Box<dyn Error>> {
-    let translate = match switch {
-        Mode::Encrypt => Caesar::encrypt_bytes,
-        Mode::Decrypt => Caesar::decrypt_bytes,
-    };
-
+) -> Result<(), io::Error> {
     let cpus = cpus::get();
-    let mut bufs = get(cpus);
-    let stdout = io::stdout();
-    let mut writer = stdout.lock();
+    let numbered_bufs: Vec<_> = (0..cpus).map(|_| Mutex::new([0; BUFFER_SIZE])).collect();
 
-    let mut filled = cpus - 1;
-    let mut bytes = BUFFER_SIZE;
+    thread::scope(|s| {
+        let (last_sender, mut prev_receiver) = bounded(0);
 
-    // runs until there is no data left
-    loop {
-        if filled < (cpus - 1) {
-            break;
+        let (txs, handles): (Vec<_>, Vec<_>) = numbered_bufs
+            .iter()
+            .enumerate()
+            .map(|(i, buf)| {
+                // this is the channel between this thread and the main thread
+                let (reader_tx, reader_rx) = bounded(0);
+
+                // this is the channel between this thread and the next thread in the chain (our
+                // notifier)
+                let (our_tx, prev_receiver) = if i != numbered_bufs.len() - 1 {
+                    let (our_tx, next_rx) = bounded(0);
+                    (our_tx, std::mem::replace(&mut prev_receiver, next_rx))
+                } else {
+                    // TODO: remove the second clone somehow
+                    (last_sender.clone(), prev_receiver.clone())
+                };
+
+                let handle = s.spawn(move |_| {
+                    let stdout = io::stdout();
+
+                    while let Ok(bytes_read) = reader_rx.recv() {
+                        let mut lock = buf
+                            .lock()
+                            .expect("no thread should poison the mutex (by panicking)");
+
+                        // do our heavy work
+                        translate(caesar, &mut lock[..bytes_read]);
+
+                        // wait until the previous thread signals us to start
+                        if let Ok(()) = prev_receiver.recv() {
+                            stdout
+                                .lock()
+                                .write_all(&lock[..bytes_read])
+                                .expect("write shouldn't fail");
+
+                            // drop the mutex guard on the buffer so main can read into it, since after
+                            // this we are done with it.
+                            drop(lock);
+
+                            // here we have finished our printing, so we will block on sending a
+                            // message to the next thread in the chain so they can print their
+                            // work if there is still work left (checked by the bytes_read).
+                            if bytes_read == BUFFER_SIZE {
+                                our_tx.send(()).unwrap();
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                });
+
+                (reader_tx, handle)
+            })
+            .unzip();
+
+        let mut iter = txs.iter().zip(numbered_bufs.iter());
+
+        // we are special casing the first buffer to start our channel chain
+        let (tx, buf) = iter.next().expect("There must be atleast 1 worker thread");
+
+        let bytes_read = read_into_buf(tx, buf, reader);
+
+        // starting the circle
+        last_sender.send(()).unwrap();
+
+        if bytes_read != BUFFER_SIZE {
+            close_threads(txs, handles);
+            return;
         }
-        // assign messages to each buffer and break the
-        // loop if no more data is coming in
-        for (i, buf) in (&mut bufs).iter_mut().enumerate() {
-            bytes = reader.read(buf)?;
 
-            if bytes != BUFFER_SIZE {
-                filled = i;
-                break;
+        'outer: loop {
+            for (tx, buf) in iter {
+                let bytes_read = read_into_buf(tx, buf, reader);
+
+                if bytes_read != BUFFER_SIZE {
+                    break 'outer;
+                }
             }
+
+            iter = txs.iter().zip(numbered_bufs.iter());
         }
 
-        // work on each buffer in parallel
-        bufs.par_iter_mut()
-            .take(filled + 1)
-            .for_each(|buf| translate(caesar, buf));
-
-        // print all filled buffers except the last one
-        for buf in bufs.iter().take(filled) {
-            writer.write(buf)?;
-        }
-
-        // print the last filled buffer until the amount of
-        // bytes read (to make sure no junk is printed)
-        let last = &bufs[filled][0..bytes];
-        writer.write(last)?;
-    }
+        close_threads(txs, handles);
+    })
+    .expect("thread scope shouldn't fail");
 
     Ok(())
+}
+
+fn read_into_buf<R: Read>(
+    tx: &Sender<usize>,
+    buf: &Mutex<[u8; BUFFER_SIZE]>,
+    reader: &mut BufReader<R>,
+) -> usize {
+    let buf = &mut *buf
+        .lock()
+        .expect("no thread should poison the mutex (by panicking)");
+
+    let bytes_read = reader.read(buf).expect("reader shouldn't panic");
+    tx.send(bytes_read).expect("sender shouldn't panic");
+    bytes_read
+}
+
+fn close_threads(txs: Vec<Sender<usize>>, handles: Vec<ScopedJoinHandle<()>>) {
+    // we need to drop our channels (close them) here so the threads know to stop
+    drop(txs);
+
+    for handle in handles {
+        // this should never fail
+        handle.join().expect("no thread should panic");
+    }
 }

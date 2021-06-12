@@ -1,14 +1,18 @@
 use super::{buffers, Mode};
 use csr::Caesar;
-use std::error::Error;
 
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{self, BufReader};
 
-pub fn run(switch: Mode, caesar: Caesar, path: &str) -> Result<(), Box<dyn Error>> {
+pub fn run(switch: Mode, caesar: Caesar, path: &str) -> Result<(), io::Error> {
     let f = File::open(path)?;
     let mut reader = BufReader::new(f);
-    buffers::run(switch, caesar, &mut reader)?;
+    let translate = match switch {
+        Mode::Encrypt => Caesar::encrypt_bytes,
+        Mode::Decrypt => Caesar::decrypt_bytes,
+    };
+
+    buffers::run(translate, caesar, &mut reader)?;
 
     Ok(())
 }
