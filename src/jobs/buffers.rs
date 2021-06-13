@@ -5,6 +5,7 @@ use crossbeam::{
 use csr::Caesar;
 use num_cpus as cpus;
 use std::io::{self, prelude::*, BufReader};
+use std::mem::MaybeUninit;
 use std::sync::Mutex;
 
 const BUFFER_SIZE: usize = 32768;
@@ -15,7 +16,11 @@ pub fn run<R: Read>(
     reader: &mut BufReader<R>,
 ) -> Result<(), io::Error> {
     let cpus = cpus::get();
-    let numbered_bufs: Vec<_> = (0..cpus).map(|_| Mutex::new([0; BUFFER_SIZE])).collect();
+    let numbered_bufs: Vec<Mutex<[MaybeUninit<u8>; BUFFER_SIZE]>> = (0..cpus)
+        // Safety: refer to:
+        // https://doc.rust-lang.org/std/mem/union.MaybeUninit.html#initializing-an-array-element-by-element
+        .map(|_| Mutex::new(unsafe { MaybeUninit::uninit().assume_init() }))
+        .collect();
 
     thread::scope(|s| {
         let (last_sender, mut prev_receiver) = bounded(0);
@@ -45,15 +50,21 @@ pub fn run<R: Read>(
                             .lock()
                             .expect("no thread should poison the mutex (by panicking)");
 
+                        // Safety: we are only reading parts that are promised to be initialized by
+                        // the main thread, so this should be safe.
+                        let buf = unsafe {
+                            &mut std::slice::from_raw_parts_mut(
+                                lock.as_mut_ptr() as *mut u8,
+                                lock.len(),
+                            )[..bytes_read]
+                        };
+
                         // do our heavy work
-                        translate(caesar, &mut lock[..bytes_read]);
+                        translate(caesar, buf);
 
                         // wait until the previous thread signals us to start
                         if let Ok(()) = prev_receiver.recv() {
-                            stdout
-                                .lock()
-                                .write_all(&lock[..bytes_read])
-                                .expect("write shouldn't fail");
+                            stdout.lock().write_all(buf).expect("write shouldn't fail");
 
                             // drop the mutex guard on the buffer so main can read into it, since after
                             // this we are done with it.
@@ -111,12 +122,15 @@ pub fn run<R: Read>(
 
 fn read_into_buf<R: Read>(
     tx: &Sender<usize>,
-    buf: &Mutex<[u8; BUFFER_SIZE]>,
+    buf: &Mutex<[MaybeUninit<u8>; BUFFER_SIZE]>,
     reader: &mut BufReader<R>,
 ) -> usize {
-    let buf = &mut *buf
+    let lock = &mut *buf
         .lock()
         .expect("no thread should poison the mutex (by panicking)");
+
+    // Safety: we are only writing into it, so this should be safe.
+    let buf = unsafe { std::slice::from_raw_parts_mut(lock.as_mut_ptr() as *mut u8, lock.len()) };
 
     let bytes_read = reader.read(buf).expect("reader shouldn't panic");
     tx.send(bytes_read).expect("sender shouldn't panic");
